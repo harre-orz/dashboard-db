@@ -154,6 +154,7 @@ def write_block_v1_0(data,tables,log,file):
         if tab != 'hop':
           fids,vals = get_measurement_params(fids,vals,data['info'][0])
         else:
+          break
           ttid = data[tab][i]['ttid']
           data[tab][i].pop('ttid')
           #did = data['info'][0]['deviceid'][-12:]
