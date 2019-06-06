@@ -44,7 +44,7 @@ def get_id_from_table(table,did,srcip,dstip,ts):
 and srcip = '%s' and dstip = '%s' and eventstamp = to_timestamp(%s)"%(table,did,srcip,dstip,ts)
   print cmd
   res = sql.run_data_cmd(cmd,conn=conn)
-  #print res,str(res[0][0])
+  print res,str(res[0][0])
   traceroutearr[did][tup] = str(res[0][0])
   return traceroutearr[did][tup]
 
@@ -90,7 +90,7 @@ def get_tool_info(tool):
   #return int(res[0][0])
   #return 'asdasd'
   return tool
-  
+
 def form_insert_cmd(table,fids,vals):
   if table.lower() == 'measurements':
     tabfid = fids.index('param')
@@ -143,6 +143,7 @@ def write_block_v1_0(data,tables,log,file):
     return
 
   #print data
+  print data
   for tab in tables:
     if tab in data:
       numrec = len(data[tab])
@@ -155,14 +156,16 @@ def write_block_v1_0(data,tables,log,file):
         else:
           ttid = data[tab][i]['ttid']
           data[tab][i].pop('ttid')
-          did = data['info'][0]['deviceid'][-12:]
+          #did = data['info'][0]['deviceid'][-12:]
+          didTmp = data['info'][0]['deviceid'][-12:]
+          did = didTmp.replace(":","")
           ts = data['traceroute'][ttid]['timestamp']
           srcip = data['traceroute'][ttid]['srcip']
           dstip = data['traceroute'][ttid]['dstip']
           tid = get_id_from_table(tables['traceroute'],did,srcip,dstip,ts)
           idtuple = {"tid":tid}
           fids,vals = get_measurement_params(fids,vals,idtuple)
-        
+
         fids,vals = get_measurement_params(fids,vals,data[tab][i])
         cmd = form_insert_cmd(table,fids,vals)
         print cmd
@@ -170,7 +173,7 @@ def write_block_v1_0(data,tables,log,file):
         cnt = 0
         #while ((res == 0) and (cnt < 5)):
           #print "res ", res
-          #time.sleep(.1)   
+          #time.sleep(.1)
           #res = sql.run_insert_cmd(cmd)
           #cnt += 1
         #if res == 0:
@@ -212,7 +215,9 @@ def parse_block(block,version,tables,log,file):
     write_block_v1_0(data,tables,log,file)
   if version == '1.2' or version == '1.3':
     data = parse_block_v1_1(block,version,tables,log)
-    did = data['info'][0]['deviceid']
+    #did = data['info'][0]['deviceid']
+    didTmp = data['info'][0]['deviceid']
+    did = didTmp.replace(":","")
     write_block_v1_0(data,tables,log,file)
   return True
 
@@ -257,10 +262,6 @@ def move_file(file,dir):
 def ignore_file(file):
   if '.xml' not in file:
     return True
-  if 'OW' not in file:
-    return True
-  if 'OW_' in file:
-    return True
   return False
 
 if __name__ == '__main__':
@@ -290,4 +291,3 @@ if __name__ == '__main__':
       sys.exit()
   log.close()
   filelog.close()
-
